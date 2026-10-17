@@ -1,0 +1,455 @@
+{
+  "info": {
+    "_postman_id": "cec12d98-2496-43a4-b6ec-473efe71c0fd",
+    "name": "Tugas2 Flights API - Rafa Lutfyah",
+    "description": "Pengujian otomatis API Tugas 1 (Topik 14 - Maskapai: Jadwal Penerbangan). Jalankan berurutan dengan server baru dinyalakan.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "CRUD",
+      "item": [
+        {
+          "name": "GET Semua Penerbangan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Respons berupa array dan tidak kosong\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"array\");",
+                  "    pm.expect(json.length).to.be.above(0);",
+                  "});",
+                  "pm.test(\"Setiap data memiliki field lengkap\", function () {",
+                  "    pm.response.json().forEach(function (f) {",
+                  "        pm.expect(f).to.have.all.keys(\"id\",\"kodePenerbangan\",\"maskapai\",\"asal\",\"tujuan\",\"jadwalBerangkat\");",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/flights",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Penerbangan by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Respons berupa objek dengan id 1\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"object\");",
+                  "    pm.expect(json.id).to.eql(1);",
+                  "    pm.expect(json.kodePenerbangan).to.eql(\"XY-512\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/flights/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Filter Asal CGK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Semua data hasil filter berasal dari CGK\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"array\").that.is.not.empty;",
+                  "    json.forEach(function (f) {",
+                  "        pm.expect(f.asal).to.eql(\"CGK\");",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/flights?asal=CGK",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights"
+              ],
+              "query": [
+                {
+                  "key": "asal",
+                  "value": "CGK"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Tambah Penerbangan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Struktur respons { status, message, data }\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"success\");",
+                  "    pm.expect(json.message).to.include(\"berhasil ditambahkan\");",
+                  "    pm.expect(json.data).to.be.an(\"object\");",
+                  "});",
+                  "pm.test(\"Data baru memiliki id dan identitas Rafa\", function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.id).to.be.a(\"number\");",
+                  "    pm.expect(data.maskapai).to.include(\"2428240125\");",
+                  "});",
+                  "// simpan id data baru untuk request PUT dan DELETE (hanya bila POST berhasil)",
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.set(\"flightId\", pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/flights",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kodePenerbangan\": \"RL-125\",\n  \"maskapai\": \"Rafa Lutfyah Air 2428240125\",\n  \"asal\": \"PLM\",\n  \"tujuan\": \"CGK\",\n  \"jadwalBerangkat\": \"2026-10-25T10:00:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT Ubah Penerbangan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Data berhasil diganti dan id tetap sama\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"success\");",
+                  "    pm.expect(json.data.id).to.eql(Number(pm.environment.get(\"flightId\")));",
+                  "    pm.expect(json.data.tujuan).to.eql(\"SUB\");",
+                  "    pm.expect(json.data.jadwalBerangkat).to.eql(\"2026-10-25T14:30:00+07:00\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/flights/{{flightId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights",
+                "{{flightId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kodePenerbangan\": \"RL-125\",\n  \"maskapai\": \"Rafa Lutfyah Air 2428240125\",\n  \"asal\": \"PLM\",\n  \"tujuan\": \"SUB\",\n  \"jadwalBerangkat\": \"2026-10-25T14:30:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE Hapus Penerbangan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Pesan sukses dan data bernilai null\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"success\");",
+                  "    pm.expect(json.message).to.include(\"berhasil dihapus\");",
+                  "    pm.expect(json.data).to.be.null;",
+                  "});",
+                  "// bersihkan variabel agar tidak dipakai ulang",
+                  "pm.environment.unset(\"flightId\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/flights/{{flightId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights",
+                "{{flightId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Skenario Gagal",
+      "item": [
+        {
+          "name": "GET ID Tidak Ada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Struktur error { status, message, data }\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"error\");",
+                  "    pm.expect(json.message).to.include(\"99\");",
+                  "    pm.expect(json.message).to.include(\"tidak ditemukan\");",
+                  "    pm.expect(json.data).to.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/flights/99",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights",
+                "99"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Body Kosong (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Struktur error { status, message, data }\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"error\");",
+                  "    pm.expect(json.message).to.include(\"wajib diisi\");",
+                  "    pm.expect(json.data).to.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/flights",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT ID Tidak Ada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Struktur error { status, message, data }\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"error\");",
+                  "    pm.expect(json.message).to.include(\"tidak ditemukan\");",
+                  "    pm.expect(json.data).to.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/flights/99",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "flights",
+                "99"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kodePenerbangan\": \"RL-125\",\n  \"maskapai\": \"Rafa Lutfyah Air 2428240125\",\n  \"asal\": \"PLM\",\n  \"tujuan\": \"SUB\",\n  \"jadwalBerangkat\": \"2026-10-25T14:30:00+07:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET Endpoint Tidak Terdaftar (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Struktur error { status, message, data }\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"error\");",
+                  "    pm.expect(json.message).to.eql(\"Endpoint tidak ditemukan\");",
+                  "    pm.expect(json.data).to.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tidak-ada",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tidak-ada"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
